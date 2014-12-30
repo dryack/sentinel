@@ -3,6 +3,7 @@ require 'rubygems'
 require 'yaml'
 require 'net/https'
 require 'gli'
+require './pagerduty'
 include GLI::App
 
 #program :name, 'sentinel'
@@ -12,6 +13,12 @@ subcommand_option_handling :normal
 sort_help :manually
 
 config_file '.sentinel.rc'
+
+desc 'PagerDuty hostname' 
+flag [:h, :hostname, 'hostname']
+
+desc 'PagerDuty API Key'
+flag [:k, :api_key, 'api_key']
 
 desc 'User email'
 flag [:u, :username, 'user_email']
@@ -30,14 +37,24 @@ switch :r, :repeatable, :default_value => false
 
 desc 'Debug Level'
 flag [:debug], 'debug_level', :default_value => 3, :must_match => { "debug" => 0,
-                                                                   "info" => 1,
-                                                                   "warn" => 2,
-                                                                   "error" => 3,
-                                                                   "fatal" => 4}
+                                                                    "info" => 1,
+                                                                    "warn" => 2,
+                                                                    "error" => 3,
+                                                                    "fatal" => 4 }
 
+desc "Test sentinel's readiness to monitor and alert"
+command :test do |c|
+  c.action do |global, options, arg|
+    $logger.info("Action: Test, starting...")
+    @sentinel = Sentinel.new($g_Sentinel_Opts)
+    p @sentinel.all_users
+  end
+end
 
-def get_sentinel_ops(global)
+def get_sentinel_opts(global)
   sentinel_opts = {
+    :hostname => global[:h],
+    :api_key => global[:k],
     :user_email => global[:u],
     :escal_policy => global[:e],
     :delete_flag => global[:d],
@@ -50,17 +67,19 @@ end
 
 
 pre do |global,commands,options,arg|
-  g_Sentinel_Opts = get_sentinel_opts(global)
-  
-  logger = Logger.new(STDOUT)
-  #logger.level = g_Sentinel_Opts[:debug_lvl]
-  logger.level = Logger::DEBUG
+  $g_Sentinel_Opts = get_sentinel_opts(global)
+#end
 
-  logger.info("Sentinel starting...")
-  logger.debug("g_Sentinel_Opts = #{g_Sentinel_Opts}, args = #{ARG}")
+#post do |global,commands,options,arg|
+  $logger = Logger.new(STDOUT)
+  #logger.level = g_Sentinel_Opts[:debug_lvl]
+  $logger.level = Logger::DEBUG
+
+  $logger.info("Sentinel starting...")
+  $logger.debug("g_Sentinel_Opts = #{$g_Sentinel_Opts}, args = #{arg}")
   
-  $sentinel = Sentinel::Client.new(g_Sentinel_opts)
-  
-  logger.info("Sentinel 'pre do' complete")
+  $logger.info("Sentinel 'pre do' complete")
 end
+#$logger.info("Sentinel closing")
+#$logger.debug('g_Sentinel_Opts')
 exit run(ARGV)
