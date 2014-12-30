@@ -1,0 +1,30 @@
+Pagerduty:
+
+query users by name and/or email address (https://blahblah.pagerduty.com/api/v1/users/?query=) (GET)
+query escalation_policies by name (https://blahblah.pagerduty.com/api/v1/escalation_policies/?query=) (GET)
+create escalation policies (https://blahblah.pagerduty.com/api/v1/escalation_policies) (POST)
+query escalation rules (https://blahblah.pagerduty.com/api/v1/escalation_policies/<POLICY_ID>/escaltion_rules (GET)
+modify escalation rules (https://blahblah.pagerduty.com/api/v1/escalation_policies/<POLICY_ID>/escalation_rules (PUT) <---- NOT a POST!!!
+send a Trigger Event (https://events.pagerduty.com/generic/<2010-04-15>/create_event.json) (POST)
+
+detect the result of the above, and act appropriately - generally warning the user and cleaning itself up before closing down and returning an error to the system.
+
+
+Wrap:
+
+be able to call the requested unix/linux command line
+be able to read the return message of a command line
+be able to run 'watch' over the requested command line
+NOT start any of the above until it's certain pagerduty is set up correctly
+
+
+Interface:
+
+run in debug mode
+set user name or email (email recommended?)
+set target escalation_policy
+optionally automatically delete escalation policy upon ACK or upon user returning to and using calling keyboard
+optionally allow for setting 'repeat_enabled' on the created escalation_policy
+optionally allow for setting the number of loops ('num_loops') the escalation_policy will run
+
+'sentinel [-u dave.ryack@urbanairship] [-e sentinel_p] [-d ack|key] -l [1..20] 'watch grep "minke whale" *'
